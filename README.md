@@ -1,126 +1,164 @@
----
-title: AsiPilot
-emoji: 🚀
-colorFrom: blue
-colorTo: green
-sdk: docker
-pinned: false
----
+# AsiPilot
 
-# 🚀 AsiPilot: The AI-Powered Web IDE
+AsiPilot is an AI-native, browser-based IDE built around ASI-1. It combines code editing, AI chat, code completion, multi-agent review, terminal execution, and GitHub workflows in a single application.
 
-AsiPilot is a cutting-edge, browser-based integrated development environment (IDE) tailored for modern web development. Powered by the advanced **ASI-1 Mini AI** and an ensemble of specialized multi-agent reviewers, AsiPilot offers a seamless, interactive, and highly intelligent coding experience right within your web browser.
+## Executive Summary
 
-## ✨ Key Features
+| Item | Details |
+| --- | --- |
+| Product Type | Browser-based AI IDE |
+| Primary Use Case | Build, review, and ship code faster from one workspace |
+| AI Backbone | ASI-1 API (chat, completion, analysis, orchestration) |
+| Deployment Model | Monorepo with Docker and Docker Compose support |
+| Key Integrations | GitHub, Redis, WebSocket streaming |
 
-- **🧠 Seamless AI Integration**: Write, refactor, and review code with an intelligent AI assistant. The AI automatically reads your full workspace context and can parse code blocks from chat to **inject changes directly** into your IDE files.
-- **🖥️ Monaco Editor Power**: Enjoy a full-fledged VS Code-like editing experience with advanced syntax highlighting, autocompletion, and powerful shortcuts.
-- **🔍 Multi-Agent Code Review**: Benefit from specialized AI agents dedicated to Security, Performance, Style, and Documentation, ensuring your code is always production-ready.
-- **⚡ Live HTML/Web Preview**: See your HTML, CSS, and JS changes in real-time. Features a built-in "New Tab" option for a detached live web preview experience.
-- **🌐 Multi-Environment Support**: Built-in URL routing and advanced architecture support for multiple environments including Web, Java, and Python.
-- **⌨️ Integrated Terminal**: A fully functional browser-to-container terminal emulator powered by WebSockets.
-- **🐙 GitHub Integration**: Import repositories directly, request multi-agent AI reviews, and generate PR-ready pull requests effortlessly.
+## Key Capabilities
 
-## 🛠️ Technology Stack
+| Capability | Description | Business Value |
+| --- | --- | --- |
+| AI Chat and Streaming | Real-time ASI-1 assistant integrated in the IDE | Faster iteration and lower context switching |
+| Code Completion | Context-aware inline suggestions | Higher coding velocity |
+| Multi-Agent Review | Security, performance, style, and documentation agents | Better code quality before PR |
+| Monaco-Based Editor | Multi-file editing with VS Code-grade engine | Familiar professional developer experience |
+| Integrated Terminal | Browser terminal over WebSocket | In-app execution and validation |
+| Live Preview | Real-time HTML/CSS/JS preview | Rapid UI feedback loop |
+| GitHub Workflow | Repository import and patch/PR flow | Shorter path from idea to merge |
 
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Monaco Editor, Zustand
-- **Backend**: Node.js, Express, Socket.io, ASI-1 Mini API Proxy
-- **Infrastructure**: Docker, Docker Compose, Redis (for pub/sub, caching, & agent coordination)
+## Architecture Overview
 
-## 🚀 Setup Instructions
+```text
+Client (React + Monaco + Zustand)
+  -> REST API (Express routes)
+  -> WebSocket channel (chat tokens, terminal, execution events)
+
+Server (Express + Agent Orchestrator)
+  -> ASI-1 service client
+  -> GitHub service
+  -> Redis (cache/pub-sub/coordination)
+```
+
+Detailed architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
+
+## Repository Structure
+
+| Path | Purpose |
+| --- | --- |
+| packages/client | React application, IDE shell, editor and UI components |
+| packages/server | Express API, WebSocket handlers, AI services, agent orchestration |
+| packages/shared | Shared types, constants, and cross-package utilities |
+| Dockerfile | Production image build configuration |
+| docker-compose.yml | Local multi-service orchestration |
+
+## Technology Stack
+
+| Layer | Technologies |
+| --- | --- |
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS, Monaco, Zustand |
+| Backend | Node.js, Express, Socket.io |
+| AI | ASI-1 API with streaming and retry support |
+| Infrastructure | Docker, Docker Compose, Redis |
+| Repository | npm workspaces monorepo |
+
+## Local Development
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v16 or higher)
-- [npm](https://www.npmjs.com/)
-- [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/) (optional, for containerized local setups & deployments)
 
-### 1. Local Development Setup
+| Requirement | Minimum Version |
+| --- | --- |
+| Node.js | 18+ |
+| npm | 9+ |
+| Docker | Recommended |
 
-To run the application locally for development:
+### Setup
 
 ```bash
-# Clone the repository
 git clone https://github.com/your-username/AsiPilot.git
 cd AsiPilot
-
-# Install monorepo dependencies
 npm install
-
-# Setup Environment Variables
 cp .env.example .env
 ```
 
-Open `.env` and configure your necessary keys:
-```env
-# Required for AI Features
-ASI1_API_KEY=your_asi1_api_key_here
+### Environment Variables
 
-# Required for GitHub Integration
-GITHUB_TOKEN=your_github_token_here
-```
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| NODE_ENV | No | Runtime mode (development/production) |
+| PORT | No | Server port |
+| CLIENT_URL | No | Allowed client origin |
+| ASI1_API_KEY | Yes | ASI-1 authentication key |
+| ASI1_BASE_URL | No | ASI-1 API base URL |
+| ASI1_MODEL | No | Default ASI-1 model |
+| GITHUB_TOKEN | Optional | GitHub integration and PR automation |
+| REDIS_URL | No | Redis connection string |
+| LOG_LEVEL | No | Server logging verbosity |
 
-**Start the Development Servers:**
-
-You can start the frontend and backend servers concurrently. AsiPilot also requires a Redis instance for its agent coordination system.
+Start Redis and run development servers:
 
 ```bash
-# Start a local Redis instance (using Docker)
-docker run -d -p 6379:6379 redis
-
-# Start both client and server in development mode
+docker run -d --name asipilot-redis -p 6379:6379 redis
 npm run dev:all
 ```
 
-- **Frontend App**: [http://localhost:5173](http://localhost:5173)
-- **Backend API**: [http://localhost:3001](http://localhost:3001)
+| Service | URL |
+| --- | --- |
+| Client | http://localhost:5173 |
+| Server | http://localhost:3001 |
 
-### 2. Docker & Production Deployment (e.g., Hugging Face Spaces)
+## Scripts
 
-This project is fully ready to be deployed as a Docker container, making it ideal for Hugging Face Spaces or traditional VPS setups.
+| Command | Description |
+| --- | --- |
+| npm run dev | Start client development server |
+| npm run dev:server | Start server development process |
+| npm run dev:all | Run client and server concurrently |
+| npm run build | Build shared, server, and client packages |
+| npm run typecheck | Run TypeScript project-reference checks |
 
-```bash
-# Build the Docker image locally
-docker build -t asipilot-ide .
+## Deployment
 
-# Or run the entire stack using Docker Compose
-docker-compose up --build
-```
+| Option | Command |
+| --- | --- |
+| Docker Compose | docker-compose up --build |
+| Single Image | docker build -t asipilot-ide . |
+| Single Image Run | docker run --env-file .env -p 7860:7860 asipilot-ide |
 
-> **Note**: For Hugging Face Spaces or generic Docker environments, the frontend builds and is served statically by the backend Express server, while APIs and WebSockets run on the same container port (usually port 7860 on Hugging Face). You can use UptimeRobot or a similar pinger to keep your deployed space active.
+In containerized mode, the backend serves static frontend assets and API/WebSocket traffic from a single port.
 
-## 📚 Documentation
+## API and Realtime Surface
 
-For a deeper dive into how AsiPilot is built, check out the following documentation files:
+| Surface | Capability |
+| --- | --- |
+| REST | Chat, completion, review, docs and integration endpoints |
+| SSE | Token streaming for chat responses |
+| WebSocket | Terminal IO, execution events, chat token streaming |
 
-- [System Architecture](ARCHITECTURE.md) - High-level overview of the application design, data flow, and deployment.
-- [Client Documentation](packages/client/README.md) - Details on the React IDE shell, Monaco editor, and state management.
-- [Server Documentation](packages/server/README.md) - Insights into the Express proxy, WebSocket coordination, and Multi-Agent reviewers.
-- [Shared Module Documentation](packages/shared/README.md) - Overview of the shared TypeScript contracts and utilities.
+Package-level docs:
 
-## 📂 Project Structure
+- [packages/server/README.md](packages/server/README.md)
+- [packages/client/README.md](packages/client/README.md)
+- [packages/shared/README.md](packages/shared/README.md)
 
-AsiPilot is structured as an npm monorepo for maximum code sharing and separation of concerns.
+## Hackathon Readiness
 
-```text
-AsiPilot/
-├── packages/
-│   ├── shared/    # TypeScript interfaces, types, constants, and utilities
-│   ├── server/    # Express API server, Proxy, WebSocket handlers, AI Agents
-│   └── client/    # React frontend, Monaco IDE, layout, chat UI, state management
-├── Dockerfile          # Production Docker build definition
-├── docker-compose.yml  # Local multi-container orchestration
-└── package.json        # Root workspace configuration
-```
+| Requirement Area | Current Status |
+| --- | --- |
+| ASI-1 Integration Depth | Implemented across chat, completion, and multi-agent analysis |
+| Codebase Documentation | Root and package-level documentation available |
+| Setup Reproducibility | .env template and Docker-based startup provided |
+| Demonstration Path | Import -> Generate -> Review -> Validate -> PR workflow supported |
 
-## 🤝 Contributing
+## Recommended Demo Flow
 
-Contributions are welcome!
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Import a GitHub repository.
+2. Use ASI-1 chat to generate or refactor feature code.
+3. Run multi-agent review and inspect findings.
+4. Apply fixes and verify using preview/terminal.
+5. Create a PR with summarized changes.
 
-## 📄 License
+## Contributing
 
-Distributed under the MIT License.
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit changes.
+4. Push branch.
+5. Open a pull request.
