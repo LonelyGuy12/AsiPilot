@@ -3,7 +3,6 @@ import FeaturesSection from './FeaturesSection';
 import ChessSection from './ChessSection';
 import ReverseChessSection from './ReverseChessSection';
 import NumbersSection from './NumbersSection';
-import TestimonialsSection from './TestimonialsSection';
 import CTAFooterWrapper from './CTAFooterWrapper';
 
 export default function LandingPage() {
@@ -14,7 +13,6 @@ export default function LandingPage() {
       <ChessSection />
       <ReverseChessSection />
       <NumbersSection />
-      <TestimonialsSection />
       <CTAFooterWrapper />
     </main>
   );
