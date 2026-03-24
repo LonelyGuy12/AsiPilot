@@ -3,7 +3,8 @@ import { WS_EVENTS } from './events.js';
 import { asi1 } from '../services/asi1-client.js';
 import { orchestrator } from '../agents/orchestrator.js';
 import { logger } from '../utils/logger.js';
-import type { WSCompletionRequest, WSReviewRequest, WSChatMessage, AgentType } from '@asipilot/shared';
+import { handleCodeExecution } from './execution.js';
+import type { WSCompletionRequest, WSReviewRequest, WSChatMessage, AgentType, WSExecuteRequest } from '@asipilot/shared';
 
 const activeAbortControllers = new Map<string, AbortController>();
 
@@ -63,6 +64,11 @@ export function setupWebSocketHandlers(io: SocketServer) {
         logger.error('File review error', { error: (error as Error).message });
         socket.emit(WS_EVENTS.REVIEW_FILE_RESULT, { error: (error as Error).message });
       }
+    });
+
+    // Code execution
+    socket.on(WS_EVENTS.EXECUTE_REQUEST, async (data: WSExecuteRequest) => {
+      await handleCodeExecution(socket, data);
     });
 
     // Chat with streaming

@@ -17,7 +17,7 @@ export class AgentOrchestrator extends EventEmitter {
 
   constructor() {
     super();
-    this.agents = new Map([
+    this.agents = new Map<AgentType, BaseAgent>([
       ['security', new SecurityAgent()],
       ['performance', new PerformanceAgent()],
       ['style', new StyleAgent()],

@@ -2,7 +2,9 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import Sidebar from './Sidebar';
 import MultiFileEditor from '@/components/editor/MultiFileEditor';
 import LivePreview from '@/components/preview/LivePreview';
+import TerminalPanel from '@/components/terminal/TerminalPanel';
 import AIChatPanel from '@/components/ai/AIChatPanel';
+import { useEnvStore } from '@/stores/envStore';
 
 interface PanelLayoutProps {
   layout: 'editor' | 'split' | 'preview';
@@ -19,6 +21,15 @@ function ResizeHandle({ direction = 'vertical' }: { direction?: 'vertical' | 'ho
 }
 
 export default function PanelLayout({ layout }: PanelLayoutProps) {
+  const environment = useEnvStore((s) => s.environment);
+
+  const renderSecondaryPanel = () => {
+    if (environment === 'java' || environment === 'python') {
+      return <TerminalPanel />;
+    }
+    return <LivePreview />;
+  };
+
   return (
     <PanelGroup direction="horizontal" className="flex-1 min-h-0">
       {/* Left: Sidebar */}
@@ -31,7 +42,7 @@ export default function PanelLayout({ layout }: PanelLayoutProps) {
       {/* Center: Editor + Preview */}
       <Panel defaultSize={52} minSize={30} className="flex flex-col overflow-hidden">
         {layout === 'editor' && <MultiFileEditor />}
-        {layout === 'preview' && <LivePreview />}
+        {layout === 'preview' && renderSecondaryPanel()}
         {layout === 'split' && (
           <PanelGroup direction="horizontal">
             <Panel defaultSize={50}>
@@ -39,7 +50,7 @@ export default function PanelLayout({ layout }: PanelLayoutProps) {
             </Panel>
             <ResizeHandle direction="vertical" />
             <Panel defaultSize={50}>
-              <LivePreview />
+              {renderSecondaryPanel()}
             </Panel>
           </PanelGroup>
         )}

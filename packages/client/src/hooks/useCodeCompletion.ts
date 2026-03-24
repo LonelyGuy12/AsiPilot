@@ -35,7 +35,7 @@ export function useCodeCompletion() {
           .filter((f) => f !== filePath)
           .slice(0, 3)
           .map((f) => {
-            const file = editorState.openFiles.get(f);
+            const file = editorState.openFiles[f];
             return file ? { path: f, content: file.content } : null;
           })
           .filter(Boolean);

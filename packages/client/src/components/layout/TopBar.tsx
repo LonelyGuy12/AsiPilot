@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Menu, Play, Shield, Github, Monitor, Columns, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAgentReview } from '@/hooks/useAgentReview';
 import RepoImporter from '@/components/github/RepoImporter';
+import { useEnvStore } from '@/stores/envStore';
 
 interface TopBarProps {
   layout: 'editor' | 'split' | 'preview';
@@ -10,8 +12,16 @@ interface TopBarProps {
 }
 
 export default function TopBar({ layout, onLayoutChange }: TopBarProps) {
+  const navigate = useNavigate();
   const { reviewWorkspace, isReviewing } = useAgentReview();
   const [showImporter, setShowImporter] = useState(false);
+  const environment = useEnvStore((s) => s.environment);
+
+  // Define global window method or a custom hook to trigger execution that terminal listens to?
+  // We'll dispatch a custom event for now that terminal/execution handler can listen to.
+  const executeCode = () => {
+    window.dispatchEvent(new CustomEvent('asipilot:execute'));
+  };
 
   return (
     <>
@@ -45,6 +55,17 @@ export default function TopBar({ layout, onLayoutChange }: TopBarProps) {
           ))}
         </div>
 
+        {(environment === 'java' || environment === 'python') && (
+          <Button
+            size="sm"
+            onClick={executeCode}
+            className="gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white border-0 shadow-sm transition-all"
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            Run
+          </Button>
+        )}
+
         <Button
           size="sm"
           variant="ghost"
@@ -64,6 +85,15 @@ export default function TopBar({ layout, onLayoutChange }: TopBarProps) {
         >
           <Github className="w-3.5 h-3.5" />
           Import
+        </Button>
+
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => navigate('/ide')}
+          className="gap-1.5 text-xs text-muted-foreground hover:text-foreground ml-2"
+        >
+          Change Environment
         </Button>
       </div>
 

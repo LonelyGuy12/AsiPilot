@@ -12,8 +12,8 @@ class CacheService {
       this.redis = new Redis(config.REDIS_URL, {
         maxRetriesPerRequest: 3,
         retryStrategy: (times: number) => {
-          if (times > 5) return null;
-          return Math.min(times * 200, 2000);
+          // Do not retry. Fail immediately to gracefully disable caching and prevent log spam.
+          return null;
         },
         lazyConnect: true,
       });

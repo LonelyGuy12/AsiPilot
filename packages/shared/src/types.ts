@@ -240,6 +240,11 @@ export interface WSChatMessage {
   history: ASI1Message[];
 }
 
+export interface WSExecuteRequest {
+  language: string;
+  content: string;
+}
+
 // ===== API Response Wrappers =====
 
 export interface ApiResponse<T> {

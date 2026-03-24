@@ -6,7 +6,7 @@ import { config } from '../config/env.js';
  * If AUTH_API_KEY is set in env, requires it in the Authorization header.
  */
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
-  const apiKey = (config as Record<string, string>)['AUTH_API_KEY'];
+  const apiKey = (config as unknown as Record<string, string>)['AUTH_API_KEY'];
   if (!apiKey) return next();
 
   const authHeader = req.headers.authorization;

@@ -25,6 +25,12 @@ export const WS_EVENTS = {
   REVIEW_FILE: 'review:file',
   REVIEW_FILE_RESULT: 'review:file:result',
 
+  // Execution
+  EXECUTE_REQUEST: 'execute:request',
+  EXECUTE_TOKEN: 'execute:token',
+  EXECUTE_COMPLETE: 'execute:complete',
+  EXECUTE_ERROR: 'execute:error',
+
   // Chat
   CHAT_MESSAGE: 'chat:message',
   CHAT_TOKEN: 'chat:token',
@@ -37,7 +43,7 @@ export const WS_EVENTS = {
 export const SUPPORTED_LANGUAGES = [
   'html', 'css', 'scss', 'less', 'javascript', 'typescript',
   'javascriptreact', 'typescriptreact', 'vue', 'svelte',
-  'json', 'markdown', 'yaml', 'xml', 'svg',
+  'json', 'markdown', 'yaml', 'xml', 'svg', 'java', 'python'
 ] as const;
 
 // File Extension to Language Mapping
@@ -64,6 +70,8 @@ export const EXTENSION_MAP: Record<string, string> = {
   '.yml': 'yaml',
   '.xml': 'xml',
   '.svg': 'svg',
+  '.java': 'java',
+  '.py': 'python',
   '.env': 'plaintext',
   '.gitignore': 'plaintext',
   '.prettierrc': 'json',

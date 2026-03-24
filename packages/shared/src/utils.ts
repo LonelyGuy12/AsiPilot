@@ -1,4 +1,4 @@
-import { EXTENSION_MAP, EXCLUDED_DIRECTORIES, FRONTEND_EXTENSIONS } from './constants';
+import { EXTENSION_MAP, EXCLUDED_DIRECTORIES, FRONTEND_EXTENSIONS } from './constants.js';
 
 /**
  * Estimate token count from text (~4 chars per token heuristic).

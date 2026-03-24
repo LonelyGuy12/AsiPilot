@@ -1,11 +1,19 @@
 import { useRef, useEffect } from 'react';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
+import { getSocket } from '@/services/socket';
+import { WS_EVENTS } from '@asipilot/shared';
+import { useEditorStore } from '@/stores/editorStore';
+import { useEnvStore } from '@/stores/envStore';
 import 'xterm/css/xterm.css';
 
 export default function TerminalPanel() {
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal>();
+  
+  const activeFilePath = useEditorStore((s) => s.activeFilePath);
+  const openFiles = useEditorStore((s) => s.openFiles);
+  const environment = useEnvStore((s) => s.environment);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -41,28 +49,6 @@ export default function TerminalPanel() {
     terminal.writeln('');
     terminal.write('\x1b[32m❯\x1b[0m ');
 
-    // Simple echo
-    let currentLine = '';
-    terminal.onKey(({ key, domEvent }) => {
-      const char = key;
-      if (domEvent.keyCode === 13) {
-        terminal.writeln('');
-        if (currentLine.trim()) {
-          terminal.writeln(`\x1b[90m$ ${currentLine}\x1b[0m`);
-        }
-        currentLine = '';
-        terminal.write('\x1b[32m❯\x1b[0m ');
-      } else if (domEvent.keyCode === 8) {
-        if (currentLine.length > 0) {
-          currentLine = currentLine.slice(0, -1);
-          terminal.write('\b \b');
-        }
-      } else if (char.length === 1 && !domEvent.ctrlKey && !domEvent.altKey) {
-        currentLine += char;
-        terminal.write(char);
-      }
-    });
-
     terminalRef.current = terminal;
 
     const resizeObserver = new ResizeObserver(() => fitAddon.fit());
@@ -71,6 +57,55 @@ export default function TerminalPanel() {
     return () => {
       resizeObserver.disconnect();
       terminal.dispose();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleExecute = () => {
+      if (!activeFilePath) return;
+      const file = openFiles[activeFilePath];
+      if (!file || !environment) return;
+
+      terminalRef.current?.clear();
+      terminalRef.current?.writeln(`\x1b[33mRunning ${file.path}...\x1b[0m\n`);
+      
+      const socket = getSocket();
+      socket.emit(WS_EVENTS.EXECUTE_REQUEST, {
+        language: environment,
+        content: file.content
+      });
+    };
+
+    window.addEventListener('asipilot:execute', handleExecute);
+    return () => window.removeEventListener('asipilot:execute', handleExecute);
+  }, [activeFilePath, openFiles, environment]);
+
+  useEffect(() => {
+    const socket = getSocket();
+    
+    const onToken = (data: { token: string; isError?: boolean }) => {
+      const color = data.isError ? '\x1b[31m' : '\x1b[0m';
+      const text = data.token.replace(/\n/g, '\r\n');
+      terminalRef.current?.write(`${color}${text}\x1b[0m`);
+    };
+    
+    const onComplete = () => {
+      terminalRef.current?.writeln('\n\n\x1b[32m❯ Execution finished.\x1b[0m ');
+    };
+    
+    const onError = (data: { error: string }) => {
+      terminalRef.current?.writeln(`\r\n\x1b[31m[Error] ${data.error}\x1b[0m\r\n`);
+      terminalRef.current?.writeln('\x1b[32m❯\x1b[0m ');
+    };
+
+    socket.on(WS_EVENTS.EXECUTE_TOKEN, onToken);
+    socket.on(WS_EVENTS.EXECUTE_COMPLETE, onComplete);
+    socket.on(WS_EVENTS.EXECUTE_ERROR, onError);
+
+    return () => {
+      socket.off(WS_EVENTS.EXECUTE_TOKEN, onToken);
+      socket.off(WS_EVENTS.EXECUTE_COMPLETE, onComplete);
+      socket.off(WS_EVENTS.EXECUTE_ERROR, onError);
     };
   }, []);
 

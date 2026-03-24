@@ -11,4 +11,8 @@ export const WS_EVENTS = {
   CHAT_COMPLETE: 'chat:complete',
   CHAT_STOP: 'chat:stop',
   CHAT_ERROR: 'chat:error',
+  EXECUTE_REQUEST: 'execute:request',
+  EXECUTE_TOKEN: 'execute:token',
+  EXECUTE_COMPLETE: 'execute:complete',
+  EXECUTE_ERROR: 'execute:error',
 } as const;

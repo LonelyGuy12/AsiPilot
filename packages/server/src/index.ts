@@ -2,6 +2,8 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 import helmet from 'helmet';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { config } from './config/env.js';
 import { corsMiddleware } from './middleware/cors.middleware.js';
 import { errorHandler } from './middleware/error-handler.middleware.js';
@@ -36,6 +38,21 @@ app.use('/api/v1', apiRoutes);
 
 // Error handler
 app.use(errorHandler);
+
+// Serve static frontend in production
+if (config.NODE_ENV === 'production') {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  
+  // In dist/index.js, __dirname is packages/server/dist
+  // So we go up 3 levels: dist -> server -> packages -> then into client/dist
+  const clientPath = path.join(__dirname, '../../client/dist');
+  app.use(express.static(clientPath));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientPath, 'index.html'));
+  });
+}
 
 // WebSocket
 setupWebSocketHandlers(io);
